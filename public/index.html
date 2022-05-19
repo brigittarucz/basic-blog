@@ -8,7 +8,23 @@
 </head>
 
 <body>
+    <form class="maze-form">
+        <label for="mazeSize">What is the maze size that you would like?</label>
+        <input name="mazeSize" class="maze-size" type="number" min="8" max="16">
+        <p class="maze-size-display"></p>
+        <input type="submit" value="Create maze">
+    </form>
+
+    <section class="maze-container">
+
+    </section>
+
+    <template id="maze-square-template">
+        <div class="maze-square"></div>
+    </template>
+
     <script src="start.js"></script>
 </body>
+
 
 </html>

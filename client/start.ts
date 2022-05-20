@@ -15,6 +15,25 @@ const domSelectors = {
     mazeSizeDisplay: ".maze-form",
 };
 
+interface maze {
+    size: number;
+}
+
+const useState = function () {
+    let state: maze = {
+        size: 0,
+    };
+
+    const getState = () => state;
+
+    const setState = (newState) => {
+        state = { ...newState };
+    };
+
+    return [getState, setState];
+};
+
+// ADD currying
 const addEvent = (domElement: string, event: string, fn: (e) => void) =>
     getElement(domElement).addEventListener(event, fn);
 
@@ -38,13 +57,21 @@ const initialize = function () {
     };
 };
 
-function handleMazeSize(e) {
-    console.log(e);
-}
+const handleMazeSize = (e: InputEvent) => {
+    const [state2, useState2] = useState();
 
-function handleSubmit(e) {
+    const newMaze: maze = {
+        size: Number((e.target as HTMLInputElement).value),
+    };
+
+    // console.log(state2());
+    // useState2(newMaze);
+    // console.log(state2());
+};
+
+const handleSubmit = (e) => {
     console.log(e);
-}
+};
 
 function createMaze() {
     const container = getElement(domSelectors.mazeContainer);
@@ -55,3 +82,35 @@ function createMaze() {
 }
 
 initialize().addEvents();
+
+let str = "";
+
+function myRecFn(userInput) {
+    // Termination case
+    if (typeof userInput !== "string") {
+        return;
+    }
+
+    // Base case
+    if (userInput.length === 0) {
+        return str.trim();
+    } else {
+        // Sanitizing userInput
+        userInput = userInput.trim();
+        const words: any = userInput.split(" ");
+        words.filter((word) => word.length > 0);
+
+        // Recursion itself
+        str += words[words.length - 1] + " ";
+        words.splice(-1);
+
+        const composedInput = words.reduce(
+            (accumulator, currentValue) => accumulator + currentValue + " ",
+            ""
+        );
+        console.log(composedInput);
+        return myRecFn(composedInput);
+    }
+}
+
+console.log(myRecFn("I AM A CAT"));

@@ -9,17 +9,8 @@ const domSelectors = {
     mazeTemplate: "#maze-square-template",
     mazeSize: ".maze-size",
     mazeSquare: ".maze-square",
-    mazeSizeDisplay: ".maze-form",
-};
-const useState = function () {
-    let state = {
-        size: 0,
-    };
-    const getState = () => state;
-    const setState = (newState) => {
-        state = Object.assign({}, newState);
-    };
-    return [getState, setState];
+    mazeForm: ".maze-form",
+    mazeSizeDisplay: ".maze-size-display",
 };
 // ADD currying
 const addEvent = (domElement, event, fn) => getElement(domElement).addEventListener(event, fn);
@@ -27,25 +18,38 @@ const removeEvent = (domElement, event, fn) => getElement(domElement).removeEven
 const initialize = function () {
     const addEvents = () => {
         addEvent(domSelectors.mazeSize, "input", handleMazeSize);
-        addEvent(domSelectors.mazeSizeDisplay, "submit", handleSubmit);
+        addEvent(domSelectors.mazeForm, "submit", handleSubmit);
     };
     const cleanupEvents = () => {
         removeEvent(domSelectors.mazeSize, "input", handleMazeSize);
-        removeEvent(domSelectors.mazeSizeDisplay, "submit", handleSubmit);
+        removeEvent(domSelectors.mazeForm, "submit", handleSubmit);
     };
     return {
         addEvents,
         cleanupEvents,
     };
 };
+const useState = () => {
+    let state = {
+        size: 0,
+    };
+    return {
+        // In order to call 'state' as a prop not as a method
+        get state() {
+            return state;
+        },
+        setState: (newMaze) => {
+            state = Object.assign({}, newMaze);
+        },
+    };
+};
+const mazeState = useState();
 const handleMazeSize = (e) => {
-    const [state2, useState2] = useState();
     const newMaze = {
         size: Number(e.target.value),
     };
-    // console.log(state2());
-    // useState2(newMaze);
-    // console.log(state2());
+    mazeState.setState(newMaze);
+    getElement(domSelectors.mazeSizeDisplay).textContent = String(mazeState.state.size);
 };
 const handleSubmit = (e) => {
     console.log(e);
@@ -56,28 +60,4 @@ function createMaze() {
     const templateCopy = template.content.cloneNode(true);
 }
 initialize().addEvents();
-let str = "";
-function myRecFn(userInput) {
-    // Termination case
-    if (typeof userInput !== "string") {
-        return;
-    }
-    // Base case
-    if (userInput.length === 0) {
-        return str.trim();
-    }
-    else {
-        // Sanitizing userInput
-        userInput = userInput.trim();
-        const words = userInput.split(" ");
-        words.filter((word) => word.length > 0);
-        // Recursion itself
-        str += words[words.length - 1] + " ";
-        words.splice(-1);
-        const composedInput = words.reduce((accumulator, currentValue) => accumulator + currentValue + " ", "");
-        console.log(composedInput);
-        return myRecFn(composedInput);
-    }
-}
-console.log(myRecFn("I AM A CAT"));
 //# sourceMappingURL=start.js.map

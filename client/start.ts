@@ -54,7 +54,7 @@ const useState = () => {
         get state() {
             return state;
         },
-        setState: (newMaze) => {
+        setState: (newMaze: maze) => {
             state = { ...newMaze };
         },
     };
@@ -68,21 +68,48 @@ const handleMazeSize = (e: InputEvent) => {
     };
 
     mazeState.setState(newMaze);
-    getElement(domSelectors.mazeSizeDisplay).textContent = String(
-        mazeState.state.size
-    );
+    document.querySelectorAll(domSelectors.mazeSizeDisplay).forEach((item) => {
+        item.textContent = String(mazeState.state.size);
+    });
 };
 
-const handleSubmit = (e) => {
-    console.log(e);
+const handleSubmit = (e: Event) => {
+    e.preventDefault();
+    const data = new FormData(<HTMLFormElement>e.target);
+    const mazeSizeInput = Number(data.get("mazeSize"));
+
+    if (mazeSizeInput > 16 || mazeSizeInput < 8 || !String(mazeSizeInput)) {
+        return;
+    }
+
+    createMaze();
 };
 
 function createMaze() {
-    const container = getElement(domSelectors.mazeContainer);
+    const container = getElement(domSelectors.mazeContainer) as HTMLElement;
+
+    if (container.children.length) {
+        container.innerHTML = "";
+    }
+
+    container.style.gridTemplateColumns = `repeat(${mazeState.state.size}, 1fr)`;
+    container.style.gridTemplateRows = `repeat(${mazeState.state.size}, 1fr)`;
+
     const template = getElement(
         domSelectors.mazeTemplate
     ) as HTMLTemplateElement;
-    const templateCopy = template.content.cloneNode(true);
+
+    for (let i = 0; i < Math.pow(mazeState.state.size, 2); i++) {
+        const templateCopy = template.content.cloneNode(true);
+        if (Math.round(Math.random())) {
+            (<HTMLDivElement>(
+                (<HTMLTemplateElement>templateCopy).querySelector(
+                    ".maze-square"
+                )
+            )).style.backgroundColor = "black";
+        }
+        container.appendChild(templateCopy);
+    }
 }
 
 initialize().addEvents();

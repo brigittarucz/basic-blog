@@ -4,14 +4,41 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Maze</title>
+    <style>
+        input[type=number] {
+            width: 150px;
+            margin: 1rem 0;
+        }
+
+        .maze-size-display {
+            border-bottom: 1px solid black;
+            display: inline-block;
+            width: 30px;
+            text-align: center;
+        }
+
+        .maze-container {
+            width: 400px;
+            height: 400px;
+            display: grid;
+        }
+
+        .maze-square {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 
 <body>
     <form class="maze-form">
         <label for="mazeSize">What is the maze size that you would like?</label>
-        <input name="mazeSize" class="maze-size" type="number" min="8" max="16">
-        <p class="maze-size-display"></p>
+        <div>
+            <input name="mazeSize" class="maze-size" type="number" min="8" max="16" placeholder="Input maze size">
+            <p>The maze size will be <span class="maze-size-display"></span> x <span class="maze-size-display"></span>
+            </p>
+        </div>
         <input type="submit" value="Create maze">
     </form>
 

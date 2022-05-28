@@ -151,43 +151,61 @@ class NodeClass {
     ) {}
 }
 
-function getLeft(currentPosX, currentPosY, mdMaze) {
+function getLeft(currentPosX: number, currentPosY: number, mdMaze) {
+    // If it touches boundaries
     if (currentPosX === 0) {
         return false;
     }
 
-    return mdMaze[currentPosY][currentPosX - 1]
+    // If its 0 or 1
+    return Number(mdMaze[currentPosY][currentPosX - 1])
         ? { childPosX: currentPosX - 1, childPosY: currentPosY }
         : false;
 }
 
-function getRight(currentPosX, currentPosY, mdMaze) {
+function getRight(currentPosX: number, currentPosY: number, mdMaze) {
     if (currentPosX === mdMaze[0].length - 1) {
         return false;
     }
 
-    return mdMaze[currentPosY][currentPosX + 1]
+    return Number(mdMaze[currentPosY][currentPosX + 1])
         ? { childPosX: currentPosX + 1, childPosY: currentPosY }
         : false;
 }
 
-function getTop(currentPosX, currentPosY, mdMaze) {
+function getTop(currentPosX: number, currentPosY: number, mdMaze) {
     if (currentPosY === 0) {
         return false;
     }
 
-    return mdMaze[currentPosY - 1][currentPosX]
+    return Number(mdMaze[currentPosY - 1][currentPosX])
         ? { childPosX: currentPosX, childPosY: currentPosY - 1 }
         : false;
 }
 
-function getBottom(currentPosX, currentPosY, mdMaze) {
+function getBottom(currentPosX: number, currentPosY: number, mdMaze) {
     if (currentPosY === mdMaze[0].length - 1) {
         return false;
     }
-    return mdMaze[currentPosY + 1][currentPosX]
+
+    return Number(mdMaze[currentPosY + 1][currentPosX])
         ? { childPosX: currentPosX, childPosY: currentPosY + 1 }
         : false;
+}
+
+function setDirection(dfsNode) {
+    if (dfsNode.dirBottom) {
+        return { dir: dfsNode.dirBottom, dirStr: "bottom" };
+    }
+    if (dfsNode.dirLeft) {
+        return { dir: dfsNode.dirLeft, dirStr: "left" };
+    }
+    if (dfsNode.dirRight) {
+        return { dir: dfsNode.dirRight, dirStr: "right" };
+    }
+    if (dfsNode.dirTop) {
+        return { dir: dfsNode.dirTop, dirStr: "top" };
+    }
 }
 
 function validateMaze() {
@@ -205,28 +223,111 @@ function validateMaze() {
         multidimensionalMaze.push(multidimensionalMaze[i]);
     }
 
-    const initPosX =
-        multidimensionalMaze[0].find((emptySquare, emptySquareIndex) => {
-            console.log(multidimensionalMaze);
-            console.log(emptySquareIndex);
+    const initPosX = multidimensionalMaze[0].findIndex(
+        (emptySquare, emptySquareIndex) => {
             if (emptySquare === 1) {
-                return emptySquareIndex;
+                return String(emptySquareIndex);
             }
-        }) - 1;
+        }
+    );
+
+    console.log(initPosX);
 
     // Initialize dfs root node
-    const dfs = new NodeClass(
-        initPosX,
+    const rootNode = new NodeClass(
+        Number(initPosX),
         0,
-        getLeft(initPosX, 0, multidimensionalMaze),
-        getRight(initPosX, 0, multidimensionalMaze),
-        getTop(initPosX, 0, multidimensionalMaze),
-        getBottom(initPosX, 0, multidimensionalMaze)
+        getLeft(Number(initPosX), 0, multidimensionalMaze),
+        getRight(Number(initPosX), 0, multidimensionalMaze),
+        getTop(Number(initPosX), 0, multidimensionalMaze),
+        getBottom(Number(initPosX), 0, multidimensionalMaze)
     );
+
+    const deadEnd = false;
+    const depthString = [];
+    const depthStack = [];
+
+    let currentNode = rootNode;
+    depthStack.push(currentNode);
+
+    let stopInfiniteLoop = 0;
+
+    // TODO: focus the code on the root node for historical data regarding traversals
+
+    while (stopInfiniteLoop < 50) {
+        if (
+            !currentNode.dirLeft &&
+            !currentNode.dirRight &&
+            !currentNode.dirBottom &&
+            !currentNode.dirTop
+        ) {
+            return (stopInfiniteLoop = 30);
+        }
+        let nextPath: any = setDirection(currentNode);
+        stopInfiniteLoop++;
+
+        // Is nextPath previousPath
+        if (depthStack.length >= 2) {
+            const previousPath = depthStack[depthStack.length - 2];
+            if (
+                previousPath.posX === nextPath.dir.childPosX &&
+                previousPath.posY === nextPath.dir.childPosY
+            ) {
+                nextPath = false;
+            }
+        }
+
+        if (nextPath) {
+            depthString.push(nextPath.dirStr);
+
+            currentNode[nextPath.dirStr] = new NodeClass(
+                nextPath.dir.childPosX,
+                nextPath.dir.childPosY,
+                getLeft(
+                    nextPath.dir.childPosX,
+                    nextPath.dir.childPosY,
+                    mazeArr
+                ),
+                getRight(
+                    nextPath.dir.childPosX,
+                    nextPath.dir.childPosY,
+                    mazeArr
+                ),
+                getTop(nextPath.dir.childPosX, nextPath.dir.childPosY, mazeArr),
+                getBottom(
+                    nextPath.dir.childPosX,
+                    nextPath.dir.childPosY,
+                    mazeArr
+                )
+            );
+
+            currentNode = currentNode[nextPath.dirStr];
+            depthStack.push(currentNode);
+        } else {
+            depthStack.pop();
+            currentNode = depthStack[depthStack.length - 1];
+
+            let previousDepthString = depthString[depthString.length - 1];
+            console.log("HERE", previousDepthString);
+
+            previousDepthString =
+                previousDepthString.charAt(0).toUpperCase() +
+                previousDepthString.slice(1);
+
+            console.log(currentNode);
+            console.log(currentNode[`dir${previousDepthString}`]);
+
+            // Been there
+            currentNode[`dir${previousDepthString}`] = false;
+            depthString.pop();
+        }
+
+        console.log(nextPath);
+        stopInfiniteLoop++;
+    }
 
     // Depth first search
     console.log(multidimensionalMaze);
-    console.log(dfs);
 }
 
 initialize().addEvents();

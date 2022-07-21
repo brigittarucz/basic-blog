@@ -186,74 +186,71 @@ class QueueClass {
     }
 }
 
-const newQueue = new QueueClass();
+class TraversalManager {
+    constructor (public currentPoint, public mazeArr, public queue = new QueueClass(), public visited = [currentPoint], public validVertices = []) {}
 
-// function getLeft(currentPosX: number, currentPosY: number, mdMaze) {
-//     // If it touches boundaries
-//     if (currentPosX === 0) {
-//         return false;
-//     }
+    createValidVertices() {
+        for (let i = 0; i < this.mazeArr.length; i++) {
+            let currentRow = this.mazeArr[i]
+            for(let j = 0; j < currentRow.length; j++) {
+                if(Number(currentRow[j])) {
+                    this.validVertices.push({x: j, y: i})
+                }
+            }
+        }
+    }
 
-//     // If its 0 or 1
-//     return Number(mdMaze[currentPosY][currentPosX - 1])
-//         ? { childPosX: currentPosX - 1, childPosY: currentPosY }
-//         : false;
-// }
+    changeVertex() {
+        if(this.visited.length > 1) {
+            this.visited.push = this.currentPoint
+        }
 
-// function getRight(currentPosX: number, currentPosY: number, mdMaze) {
-//     if (currentPosX === mdMaze[0].length - 1) {
-//         return false;
-//     }
+        this.currentPoint = this.queue.dequeue()
+    }
 
-//     return Number(mdMaze[currentPosY][currentPosX + 1])
-//         ? { childPosX: currentPosX + 1, childPosY: currentPosY }
-//         : false;
-// }
+    getTraversalStatus() {
+        return this
+    }
 
-// function getTop(currentPosX: number, currentPosY: number, mdMaze) {
-//     if (currentPosY === 0) {
-//         return false;
-//     }
+    getNeighborVertices() {
+        let leftNeighbour = this.findLeft()
+        leftNeighbour && this.queue.enqueue(leftNeighbour)
 
-//     return Number(mdMaze[currentPosY - 1][currentPosX])
-//         ? { childPosX: currentPosX, childPosY: currentPosY - 1 }
-//         : false;
-// }
+        let rightNeighbour = this.findRight()
+        rightNeighbour && this.queue.enqueue(rightNeighbour)
 
-// function getBottom(currentPosX: number, currentPosY: number, mdMaze) {
-//     if (currentPosY === mdMaze[0].length - 1) {
-//         return false;
-//     }
+        let topNeighbour = this.findTop()
+        topNeighbour && this.queue.enqueue(topNeighbour)
 
-//     return Number(mdMaze[currentPosY + 1][currentPosX])
-//         ? { childPosX: currentPosX, childPosY: currentPosY + 1 }
-//         : false;
-// }
+        let bottomNeighbour = this.findBottom()
+        bottomNeighbour && this.queue.enqueue(bottomNeighbour)
+    }
 
-// function setDirection(dfsNode) {
-//     if (dfsNode.dirBottom) {
-//         return { dir: dfsNode.dirBottom, dirStr: "bottom" };
-//     }
-//     if (dfsNode.dirLeft) {
-//         return { dir: dfsNode.dirLeft, dirStr: "left" };
-//     }
-//     if (dfsNode.dirRight) {
-//         return { dir: dfsNode.dirRight, dirStr: "right" };
-//     }
-//     if (dfsNode.dirTop) {
-//         return { dir: dfsNode.dirTop, dirStr: "top" };
-//     }
-// }
+    findLeft() {
+        return this.validVertices.find(point => point.x === this.currentPoint.x-1 && point.y === this.currentPoint.y)
+    }
+
+    findRight() {
+        return this.validVertices.find(point => point.x === this.currentPoint.x+1 && point.y === this.currentPoint.y)
+    }
+
+    findTop() {
+        return this.validVertices.find(point => point.x === this.currentPoint.x && point.y === this.currentPoint.y - 1)
+    }
+
+    findBottom() {
+        return this.validVertices.find(point => point.x === this.currentPoint.x && point.y === this.currentPoint.y + 1)
+    }
+}
 
 function validateMaze() {
     const mazeArr = mazeState.state.mazeArr;
     const mazeSize = mazeState.state.size;
 
-    // Build multidimensional arr
+    // Build arr of open and closed
     const multidimensionalMaze = [];
     for (let i = 0; i < mazeArr.length; i++) {
         multidimensionalMaze[i] = [];
-        console.log(mazeArr[i]);
         for (let j = 0; j < mazeArr[i].length; j++) {
             multidimensionalMaze[i].push(Number(mazeArr[i][j]));
         }
@@ -270,101 +267,12 @@ function validateMaze() {
 
     console.log(initPosX);
 
-    // // Initialize dfs root node
-    // const rootNode = new NodeClass(
-    //     Number(initPosX),
-    //     0,
-    //     getLeft(Number(initPosX), 0, multidimensionalMaze),
-    //     getRight(Number(initPosX), 0, multidimensionalMaze),
-    //     getTop(Number(initPosX), 0, multidimensionalMaze),
-    //     getBottom(Number(initPosX), 0, multidimensionalMaze)
-    // );
+    const traversalManager = new TraversalManager({x: initPosX, y: 0}, mazeArr)
 
-    // const deadEnd = false;
-    // const depthString = [];
-    // const depthStack = [];
+    traversalManager.createValidVertices()
+    console.log(traversalManager.getTraversalStatus())
+    traversalManager.getNeighborVertices()
 
-    // let currentNode = rootNode;
-    // depthStack.push(currentNode);
-
-    // let stopInfiniteLoop = 0;
-
-    // // TODO: focus the code on the root node for historical data regarding traversals
-
-    // while (stopInfiniteLoop < 50) {
-    //     if (
-    //         !currentNode.dirLeft &&
-    //         !currentNode.dirRight &&
-    //         !currentNode.dirBottom &&
-    //         !currentNode.dirTop
-    //     ) {
-    //         return (stopInfiniteLoop = 30);
-    //     }
-    //     let nextPath: any = setDirection(currentNode);
-    //     stopInfiniteLoop++;
-
-    //     // Is nextPath previousPath
-    //     if (depthStack.length >= 2) {
-    //         const previousPath = depthStack[depthStack.length - 2];
-    //         if (
-    //             previousPath.posX === nextPath.dir.childPosX &&
-    //             previousPath.posY === nextPath.dir.childPosY
-    //         ) {
-    //             nextPath = false;
-    //         }
-    //     }
-
-    //     if (nextPath) {
-    //         depthString.push(nextPath.dirStr);
-
-    //         currentNode[nextPath.dirStr] = new NodeClass(
-    //             nextPath.dir.childPosX,
-    //             nextPath.dir.childPosY,
-    //             getLeft(
-    //                 nextPath.dir.childPosX,
-    //                 nextPath.dir.childPosY,
-    //                 mazeArr
-    //             ),
-    //             getRight(
-    //                 nextPath.dir.childPosX,
-    //                 nextPath.dir.childPosY,
-    //                 mazeArr
-    //             ),
-    //             getTop(nextPath.dir.childPosX, nextPath.dir.childPosY, mazeArr),
-    //             getBottom(
-    //                 nextPath.dir.childPosX,
-    //                 nextPath.dir.childPosY,
-    //                 mazeArr
-    //             )
-    //         );
-
-    //         currentNode = currentNode[nextPath.dirStr];
-    //         depthStack.push(currentNode);
-    //     } else {
-    //         depthStack.pop();
-    //         currentNode = depthStack[depthStack.length - 1];
-
-    //         let previousDepthString = depthString[depthString.length - 1];
-    //         console.log("HERE", previousDepthString);
-
-    //         previousDepthString =
-    //             previousDepthString.charAt(0).toUpperCase() +
-    //             previousDepthString.slice(1);
-
-    //         console.log(currentNode);
-    //         console.log(currentNode[`dir${previousDepthString}`]);
-
-    //         // Been there
-    //         currentNode[`dir${previousDepthString}`] = false;
-    //         depthString.pop();
-    //     }
-
-    //     console.log(nextPath);
-    //     stopInfiniteLoop++;
-    // }
-
-    // // Depth first search
-    // console.log(multidimensionalMaze);
 }
 
 initialize().addEvents();

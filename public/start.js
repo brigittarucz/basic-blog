@@ -166,6 +166,19 @@ class TraversalManager {
             }
         }
     }
+    static getStartingPoint(arr) {
+        return arr.findIndex((emptySquare, emptySquareIndex) => {
+            if (emptySquare === 1) {
+                return String(emptySquareIndex);
+            }
+        });
+    }
+    run() {
+        this.createValidVertices();
+        // Logic for checking paths
+        this.getNeighborVertices();
+        console.log(this.queue);
+    }
     changeVertex() {
         if (this.visited.length > 1) {
             this.visited.push = this.currentPoint;
@@ -210,16 +223,9 @@ function validateMaze() {
         }
         multidimensionalMaze.push(multidimensionalMaze[i]);
     }
-    const initPosX = multidimensionalMaze[0].findIndex((emptySquare, emptySquareIndex) => {
-        if (emptySquare === 1) {
-            return String(emptySquareIndex);
-        }
-    });
-    console.log(initPosX);
+    const initPosX = TraversalManager.getStartingPoint(multidimensionalMaze[0]);
     const traversalManager = new TraversalManager({ x: initPosX, y: 0 }, mazeArr);
-    traversalManager.createValidVertices();
-    console.log(traversalManager.getTraversalStatus());
-    traversalManager.getNeighborVertices();
+    traversalManager.run();
 }
 initialize().addEvents();
 //# sourceMappingURL=start.js.map

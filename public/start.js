@@ -97,18 +97,6 @@ function createMaze() {
     mazeState.setState(Object.assign(Object.assign({}, mazeState.state), { mazeArr: rowBooleans.split(" ") }));
     validateMaze();
 }
-// Compose dir type
-// type dirT = Record<string, unknown> | boolean;
-// class NodeClass {
-//     constructor(
-//         public posX: number,
-//         public posY: number,
-//         public dirLeft: dirT,
-//         public dirRight: dirT,
-//         public dirTop: dirT,
-//         public dirBottom: dirT
-//     ) {}
-// }
 class NodeClass {
     constructor(value, next = null) {
         this.value = value;
@@ -132,7 +120,7 @@ class QueueClass {
             this.last = node;
         }
         this.length++;
-        console.log(this);
+        // console.log(this)
         return this;
     }
     dequeue() {
@@ -142,14 +130,14 @@ class QueueClass {
         if (this.first === this.last) {
             this.last = null;
         }
+        let dequeued = new NodeClass(this.first.value);
         this.first = this.first.next;
         this.length--;
-        console.log(this);
-        return this;
+        return dequeued.value;
     }
 }
 class TraversalManager {
-    constructor(currentPoint, mazeArr, queue = new QueueClass(), visited = [currentPoint], validVertices = []) {
+    constructor(currentPoint, mazeArr, queue = new QueueClass(), visited = [], validVertices = []) {
         this.currentPoint = currentPoint;
         this.mazeArr = mazeArr;
         this.queue = queue;
@@ -173,30 +161,66 @@ class TraversalManager {
             }
         });
     }
+    dfs() {
+        this.getNeighborVertices();
+        let terminate = 0;
+        console.log(this.queue);
+        // Check if there are any neighbours and paths left
+        if (this.queue.first === null) {
+            if (this.validVertices[0].y === 0) {
+                this.cleanupVisited(this.currentPoint);
+                this.visited.push(this.currentPoint);
+                this.currentPoint = this.validVertices[0];
+                this.getNeighborVertices();
+            }
+            else {
+                console.log("Impossible");
+                terminate = 1;
+                return "Impossible";
+            }
+        }
+        this.cleanupVisited(this.currentPoint);
+        this.visited.push(this.currentPoint);
+        this.currentPoint = this.queue.dequeue();
+        if (this.currentPoint.y === mazeState.state.size - 1) {
+            console.log("Possible");
+            return "Possible";
+        }
+        else if (terminate === 1) {
+            return "Impossible";
+        }
+        else {
+            return this.dfs();
+        }
+    }
     run() {
         this.createValidVertices();
-        // Logic for checking paths
-        this.getNeighborVertices();
-        console.log(this.queue);
+        console.log(this.validVertices);
+        this.dfs();
     }
-    changeVertex() {
-        if (this.visited.length > 1) {
-            this.visited.push = this.currentPoint;
+    cleanupVisited(point) {
+        let indexVisited = this.validVertices.findIndex(item => item.x === point.x && item.y === point.y);
+        // Remove from vertices array the visited vertex
+        if (indexVisited !== -1) {
+            this.validVertices.splice(indexVisited, 1);
         }
-        this.currentPoint = this.queue.dequeue();
+        return true;
     }
     getTraversalStatus() {
         return this;
     }
+    checkWasNotVisited(node) {
+        return this.visited.find(item => item.x === node.x && item.y === node.y) ? false : true;
+    }
     getNeighborVertices() {
         let leftNeighbour = this.findLeft();
-        leftNeighbour && this.queue.enqueue(leftNeighbour);
+        leftNeighbour && this.checkWasNotVisited(leftNeighbour) && this.queue.enqueue(leftNeighbour) && this.cleanupVisited(leftNeighbour);
         let rightNeighbour = this.findRight();
-        rightNeighbour && this.queue.enqueue(rightNeighbour);
+        rightNeighbour && this.checkWasNotVisited(rightNeighbour) && this.queue.enqueue(rightNeighbour) && this.cleanupVisited(rightNeighbour);
         let topNeighbour = this.findTop();
-        topNeighbour && this.queue.enqueue(topNeighbour);
+        topNeighbour && this.checkWasNotVisited(topNeighbour) && this.queue.enqueue(topNeighbour) && this.cleanupVisited(topNeighbour);
         let bottomNeighbour = this.findBottom();
-        bottomNeighbour && this.queue.enqueue(bottomNeighbour);
+        bottomNeighbour && this.checkWasNotVisited(bottomNeighbour) && this.queue.enqueue(bottomNeighbour) && this.cleanupVisited(bottomNeighbour);
     }
     findLeft() {
         return this.validVertices.find(point => point.x === this.currentPoint.x - 1 && point.y === this.currentPoint.y);

@@ -1,8 +1,8 @@
 console.log("I am the client");
-(async () => {
-    const res = await fetch("http://localhost:3000/start");
-    console.log(await res.text());
-})();
+// (async () => {
+//     const res = await fetch("http://localhost:3000/start");
+//     console.log(await res.text());
+// })();
 const getElement = (el) => document.querySelector(el);
 const domSelectors = {
     mazeContainer: ".maze-container",
@@ -136,6 +136,10 @@ class QueueClass {
         return dequeued.value;
     }
 }
+function pause(milliseconds) {
+    var dt = new Date();
+    while (Number(new Date()) - Number(dt) <= milliseconds) { /* Wait */ }
+}
 class TraversalManager {
     constructor(currentPoint, mazeArr, queue = new QueueClass(), visited = [], validVertices = []) {
         this.currentPoint = currentPoint;
@@ -161,16 +165,27 @@ class TraversalManager {
             }
         });
     }
+    setCurrentPoint(point) {
+        // bug: pause fc removes maze live exec
+        // document.querySelectorAll(domSelectors.mazeSquare)[this.currentPoint.x + this.currentPoint.y*10].style.backgroundColor = "white"
+        this.currentPoint = point;
+        document.querySelectorAll(domSelectors.mazeSquare)[this.currentPoint.x + this.currentPoint.y * 10].style.backgroundColor = "pink";
+    }
     dfs() {
         this.getNeighborVertices();
         let terminate = 0;
-        console.log(this.queue);
+        if (this.queue.first) {
+            console.log(this.queue.first.value.x, this.queue.first.value.y);
+        }
+        else {
+            console.log(this.queue);
+        }
         // Check if there are any neighbours and paths left
         if (this.queue.first === null) {
+            this.cleanupVisited(this.currentPoint);
+            this.visited.push(this.currentPoint);
             if (this.validVertices[0].y === 0) {
-                this.cleanupVisited(this.currentPoint);
-                this.visited.push(this.currentPoint);
-                this.currentPoint = this.validVertices[0];
+                this.setCurrentPoint(this.validVertices[0]);
                 this.getNeighborVertices();
             }
             else {
@@ -179,14 +194,18 @@ class TraversalManager {
                 return "Impossible";
             }
         }
-        this.cleanupVisited(this.currentPoint);
-        this.visited.push(this.currentPoint);
-        this.currentPoint = this.queue.dequeue();
+        else {
+            this.cleanupVisited(this.currentPoint);
+            this.visited.push(this.currentPoint);
+            this.setCurrentPoint(this.queue.dequeue());
+        }
         if (this.currentPoint.y === mazeState.state.size - 1) {
             console.log("Possible");
+            alert("Possible");
             return "Possible";
         }
         else if (terminate === 1) {
+            alert("Impossible");
             return "Impossible";
         }
         else {
@@ -195,7 +214,6 @@ class TraversalManager {
     }
     run() {
         this.createValidVertices();
-        console.log(this.validVertices);
         this.dfs();
     }
     cleanupVisited(point) {

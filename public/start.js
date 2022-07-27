@@ -1,8 +1,12 @@
+import connectToServer from "../node_modules/ws/index.js";
 console.log("I am the client");
-// (async () => {
-//     const res = await fetch("http://localhost:3000/start");
-//     console.log(await res.text());
-// })();
+(async () => {
+    const res = await fetch("http://localhost:3000/start");
+    console.log(await res.text());
+})();
+(async function () {
+    const ws = await connectToServer();
+});
 const getElement = (el) => document.querySelector(el);
 const domSelectors = {
     mazeContainer: ".maze-container",
